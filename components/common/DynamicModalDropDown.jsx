@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import CutomButton from './CustomButton';
+import { AppContext } from '../../contexts/AppContext';
+import { navigate } from '../../services/navigationRef';
 
 // Create the DynamicModalDropdown component
 const DynamicModalDropdown = ({
@@ -17,16 +19,20 @@ const DynamicModalDropdown = ({
   onClose,
   screens,
   title = 'Navigate to',
+  parent = null,
 }) => {
   const navigation = useNavigation();
   const slideAnim = useRef(
     new Animated.Value(-Dimensions.get('window').height),
   ).current; // Initial position off-screen
   const { colors } = useTheme();
+  const { theme } = useContext(AppContext);
   // Handle navigation and close modal
-  const handleOptionPress = screenName => {
+  const handleOptionPress = item => {
     onClose(); // Close the modal first
-    navigation.navigate(screenName); // Then navigate to the selected screen
+    if (parent != null) {
+      navigate(parent, { screen: item.screenName });
+    } else navigate(item.screenName);
   };
 
   // Slide the modal in and out based on `visible` prop
@@ -61,7 +67,7 @@ const DynamicModalDropdown = ({
             styles.modalView,
             {
               transform: [{ translateY: slideAnim }],
-              backgroundColor: colors.background,
+              backgroundColor: theme.background.default,
             },
           ]}
         >
@@ -76,11 +82,11 @@ const DynamicModalDropdown = ({
             keyExtractor={item => item.screenName} // Use screenName as the key
             renderItem={({ item }) => (
               // Wrap the Button component in a full-width container
-              <View style={styles.listItemContainer}>
+              <View style={[styles.listItemContainer]}>
                 <CutomButton
                   key={item.label}
                   name={item.label}
-                  onPress={() => handleOptionPress(item.screenName)}
+                  onPress={() => handleOptionPress(item)}
                 />
               </View>
             )}

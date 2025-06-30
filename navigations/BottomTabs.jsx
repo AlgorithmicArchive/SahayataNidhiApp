@@ -10,12 +10,13 @@ import LoginScreen from '../components/screens/home/LoginScreen';
 const Tab = createBottomTabNavigator();
 
 const BottomTabs = () => {
-  const { userType, verified } = useContext(AppContext);
+  const { userType, verified, theme } = useContext(AppContext);
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarStyle: { backgroundColor: theme.main },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 

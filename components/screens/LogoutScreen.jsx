@@ -4,12 +4,13 @@ import { AppContext } from '../../contexts/AppContext';
 import { useNavigation } from '@react-navigation/native';
 
 export default function LogoutScreen() {
-  const { theme, setUserType } = useContext(AppContext);
+  const { theme, setUserType, setVerified } = useContext(AppContext);
   const navigation = useNavigation();
 
   const handleLogout = () => {
     setUserType(null);
-    navigation.navigate('Home');
+    setVerified(null);
+    navigation.navigate('HomeTabs', { screen: 'Home' });
   };
 
   return (

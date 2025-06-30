@@ -26,19 +26,27 @@ export default function Verification() {
   } = useForm();
 
   const onSubmit = async data => {
-    // await AsyncStorage.clear();
     const formData = {
       [selectedOption === 'otp' ? 'otp' : 'backupCode']:
         data[selectedOption === 'otp' ? 'otp' : 'backupCode'],
     };
     try {
       const response = await Validate(formData);
-      console.log('VERIFICATION', response);
+      console.log('VERIFICATION RESPONSE:', response);
+
       if (response.status) {
         setVerified(true);
         setUserType(response.userType);
         setProfile(response.profile);
         setUsername(response.username);
+
+        // Persist to AsyncStorage
+        await AsyncStorage.setItem('userType', response.userType);
+        await AsyncStorage.setItem('verified', 'true');
+        await AsyncStorage.setItem('username', response.username);
+        await AsyncStorage.setItem('profile', JSON.stringify(response.profile));
+
+        // Determine the target screen based on userType
         const url =
           response.userType === 'Admin'
             ? 'AdminHome'
@@ -47,13 +55,23 @@ export default function Verification() {
             : response.userType === 'Designer'
             ? 'DesignerDashboard'
             : 'UserHome';
-        navigation.navigate('Main', { screen: url });
+
+        // Navigate to Tabs with the specific screen
+        navigation.navigate('Tabs', { screen: url });
       } else {
         setErrorMessage(response.message || 'Verification failed.');
+        Alert.alert(
+          'Verification Failed',
+          response.message || 'Invalid OTP or backup code.',
+        );
       }
     } catch (error) {
       console.error('Verification error:', error.message);
       setErrorMessage('An error occurred during verification.');
+      Alert.alert(
+        'Error',
+        'An error occurred during verification. Please try again.',
+      );
     }
   };
 

@@ -1,20 +1,21 @@
 import { useTheme } from '@react-navigation/native';
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   TouchableOpacity,
   Text,
   StyleSheet,
   GestureResponderEvent,
 } from 'react-native';
+import { AppContext } from '../../contexts/AppContext';
 
 const CutomButton = ({ name, onPress }) => {
-  const { colors } = useTheme();
+  const { theme } = useContext(AppContext);
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: colors.primary }]}
+      style={[styles.button, { backgroundColor: theme.main }]}
       onPress={onPress ? onPress : () => {}} // Do nothing if no onPress is provided
     >
-      <Text style={[styles.buttonText, { color: colors.background }]}>
+      <Text style={[styles.buttonText, { color: theme.background.default }]}>
         {name}
       </Text>
     </TouchableOpacity>

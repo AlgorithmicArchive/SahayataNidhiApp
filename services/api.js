@@ -1,8 +1,6 @@
 import { API_URL } from '@env';
 import axiosInstance from './axiosconfig';
 
-console.log('API_URL', `${API_URL}/Home/Login`); // http://192.168.0.100:5000
-
 export async function Login(formData) {
   try {
     const response = await fetch(`${API_URL}/Home/Login`, {
@@ -46,5 +44,53 @@ export async function Validate(data) {
     }
     console.error('Full error:', error);
     throw error;
+  }
+}
+
+export async function GetServiceContent(ServiceId) {
+  try {
+    const response = await axiosInstance.get(
+      API_URL + '/User/GetServiceContent',
+      {
+        params: { ServiceId },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error getting service content:', error);
+    throw error;
+  }
+}
+
+export async function fetchFormDetails(applicationId) {
+  const response = await axiosInstance.get(API_URL + '/User/GetFormDetails', {
+    params: { applicationId: applicationId },
+  });
+  return {
+    formDetails: response.data.formDetails,
+    additionalDetails: response.data.additionalDetails,
+  };
+}
+
+export async function fetchAcknowledgement(applicationId) {
+  try {
+    const response = await axiosInstance.get(
+      API_URL + '/User/GetAcknowledgement',
+      {
+        params: { ApplicationId: applicationId },
+      },
+    );
+    console.log('RESPONSE', response.data);
+    const { fullPath } = response.data;
+    console.log(fullPath);
+
+    // Ensure that the path includes the protocol
+    const completePath = fullPath.startsWith('http')
+      ? fullPath
+      : `http://10.148.54.60:5004/${fullPath}`;
+    console.log('Complete PDF Path:', completePath);
+    return { fullPath, completePath };
+  } catch (error) {
+    console.error('Error fetching PDF path:', error);
   }
 }
