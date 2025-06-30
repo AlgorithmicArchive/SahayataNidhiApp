@@ -94,3 +94,52 @@ export async function fetchAcknowledgement(applicationId) {
     console.error('Error fetching PDF path:', error);
   }
 }
+
+export const fetchServiceList = async setServices => {
+  try {
+    const response = await axiosInstance.get(
+      API_URL + '/Officer/GetServiceList',
+    );
+    const serviceList = response.data.serviceList.map(item => ({
+      label: item.serviceName,
+      value: item.serviceId,
+    }));
+    setServices(serviceList);
+    console.log('Service List', serviceList);
+  } catch (error) {
+    console.error('Failed to fetch service list:', error);
+  }
+};
+
+export async function fetchUserDetail(
+  applicationId,
+  setFormDetails,
+  setActionForm,
+) {
+  const response = await axiosInstance.get(
+    API_URL + '/Officer/GetUserDetails',
+    {
+      params: { applicationId: applicationId },
+    },
+  );
+  console.log('Response formdetails', response.data);
+
+  setFormDetails(response.data.list);
+  setActionForm(response.data.currentOfficerDetails.actionForm);
+}
+
+export async function fetchCertificateDetails() {
+  try {
+    const response = await axiosInstance.get(
+      API_URL + '/Officer/GetCertificateDetails',
+    );
+    console.log('fetchCertificateDetails response:', response.data); // Debug
+    if (!response.data.success || !response.data.certificateDetails) {
+      throw new Error('Failed to fetch certificate details.');
+    }
+    return response.data.certificateDetails;
+  } catch (error) {
+    console.error('Error fetching certificate details:', error);
+    return null;
+  }
+}

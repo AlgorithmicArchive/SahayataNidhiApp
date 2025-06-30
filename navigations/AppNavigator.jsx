@@ -1,27 +1,28 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import Verification from '../components/screens/home/Verification';
 import { AppContext } from '../contexts/AppContext';
 import HomeTabs from './HomeTabs';
 import UserTabs from './UserTabs';
+import OfficerTabs from './OfficerTabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { navigationRef } from '../services/navigationRef'; // adjust path as needed
+import { navigationRef } from '../services/navigationRef'; // adjust path
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
   const { userType, verified, setToken, setUserType, setVerified } =
     useContext(AppContext);
-  console.log('Navigator - userType:', userType, 'verified:', verified);
+  const [isAppReady, setIsAppReady] = useState(false);
 
-  // Restore session from AsyncStorage
   useEffect(() => {
     const restoreSession = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
         const userType = await AsyncStorage.getItem('userType');
         const verified = await AsyncStorage.getItem('verified');
+
         if (token && userType) {
           setToken(token);
           setUserType(userType);
@@ -29,17 +30,24 @@ const AppNavigator = () => {
         }
       } catch (error) {
         console.error('Failed to restore session:', error);
+      } finally {
+        setIsAppReady(true); // Only render navigator after restoring session
       }
     };
     restoreSession();
-  }, [setToken, setUserType, setVerified]);
+  }, []);
 
-  // Determine initial route based on userType and verified
-  const initialRouteName = !userType
-    ? 'HomeTabs'
-    : !verified
-    ? 'Verification'
-    : 'Tabs';
+  if (!isAppReady) return null; // or show a splash/loading screen
+
+  // Dynamic routing AFTER session restoration
+  let initialRouteName;
+  if (!userType) {
+    initialRouteName = 'HomeTabs';
+  } else if (!verified) {
+    initialRouteName = 'Verification';
+  } else {
+    initialRouteName = 'Tabs';
+  }
 
   return (
     <NavigationContainer ref={navigationRef}>
@@ -55,10 +63,13 @@ const AppNavigator = () => {
   );
 };
 
-// Tabs navigator for different user types
+// Tabs navigator
 const TabsNavigator = () => {
   const { userType } = useContext(AppContext);
-  return <>{userType === 'Citizen' && <UserTabs />}</>;
+  console.log('Rendering TabsNavigator for userType:', userType);
+  if (userType === 'Officer') return <OfficerTabs />;
+  if (userType === 'Citizen') return <UserTabs />;
+  return <HomeTabs />;
 };
 
 export default AppNavigator;
